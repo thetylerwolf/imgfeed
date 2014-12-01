@@ -31,7 +31,7 @@ router.get('/feed', function(req, res) {
       });
       // .pipe(FeedParser);
 
-  feedparser.on('readable', function() {
+  feedparser.on('end', function() {
     var item = this.read();
     var tags;
     var rx = /(<img.*\/>)/g;
@@ -39,6 +39,7 @@ router.get('/feed', function(req, res) {
     tags = item.description;
 
     tags = rx.exec(tags);
+    console.log(tags);
 
     res.send({tags: tags})
   });
