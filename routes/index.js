@@ -31,17 +31,23 @@ router.get('/feed', function(req, res) {
       });
       // .pipe(FeedParser);
 
-  feedparser.on('end', function() {
-    var item = this.read();
-    var tags;
-    var rx = /(<img.*\/>)/g;
+  feedparser.on('readable', function() {
+    var item = this.read(),
+        tags,
+        // rx = /(<img.*\/>)/g;
+        rx = /src="(.+?)"/;
 
-    tags = item.description;
+    var groups = item.description.split('<img')
 
-    tags = rx.exec(tags);
-    console.log(tags);
+    tags = groups.map(function(d) {
+      var match = rx.exec(d);
+      if(!match) return;
+      return match[1];
+    });
 
-    res.send({tags: tags})
+    tags = tags.filter(function(d) { return d; });
+
+    res.send({ tags:tags });
   });
 
 });
