@@ -12,7 +12,8 @@ router.get('/', function(req, res) {
 
 router.get('/feed', function(req, res) {
 
-  var feedparser = new FeedParser();
+  var feedparser = new FeedParser(),
+      tags = [];
 
   Request('http://gifgeneral.com/?feed=rss2')
       .pipe(feedparser)
@@ -31,22 +32,25 @@ router.get('/feed', function(req, res) {
       });
       // .pipe(FeedParser);
 
-  feedparser.on('readable', function() {
-    var item = this.read(),
-        tags,
+  feedparser.on('data', function (feed) {
+    var item = feed,//this.read(),
         // rx = /(<img.*\/>)/g;
         rx = /src="(.+?)"/;
 
-    var groups = item.description.split('<img')
+    var groups = item.description.split('<img'),
+        newTags;
 
-    tags = groups.map(function(d) {
+    newTags = groups.map(function(d) {
       var match = rx.exec(d);
       if(!match) return;
       return match[1];
     });
 
-    tags = tags.filter(function(d) { return d; });
+    newTags = newTags.filter(function(d) { return d; });
 
+    tags = tags.concat(newTags);
+
+  }).on('end', function() {
     res.send({ tags:tags });
   });
 

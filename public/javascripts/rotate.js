@@ -1,20 +1,65 @@
+var currentImg = 0,
+    tags,
+    intervalLoop,
+    maxIndex = 3;
+
 $.ajax('/feed')
   .success(function(data) {
-    var tags = data.tags;
+    tags = data.tags;
 
-    $('body').css({'background-image' : 'url(' + tags[0] + ')' });
+    setBground();
 
-    callNextLoop(1,tags)
+    callNextLoop();
+    setControls();
   });
 
-function callNextLoop(i, arr) {
+function setControls() {
+  $(window).keyup(function(e) {
+    var key = e.keyCode;
+    
+    switch (key) {
+      case 37:
+        prevImg();
+        break;
+      case 39:
+        nextImg();
+        break;
+      case 32:
+        toggleFull();
+        break;
+    }
+
+    setBground();
+  });
+}
+
+function callNextLoop() {
 
   setInterval(function() {
-    if(i > arr.length - 1) i = 0;
-
-    $('body').css({'background-image' : 'url(' + arr[i] + ')' });
-    i = i+1;
+    setBground();
+    nextImg();
 
   },90000)
 
+}
+
+function nextImg() {
+  currentImg = currentImg+1;
+  if(currentImg > maxIndex - 1) currentImg = 0;
+}
+
+function prevImg() {
+  currentImg = currentImg-1;
+  if(currentImg < 0) currentImg = maxIndex - 1;
+}
+
+function setBground() {
+  $('body').css({'background-image' : 'url(' + tags[currentImg] + ')' });
+}
+
+function toggleFull() {
+  if(maxIndex == tags.length) maxIndex = 3;
+  else if (maxIndex == 3) maxIndex = tags.length;
+  if(currentImg > maxIndex - 1) currentImg = 0;
+  setBground();
 }
